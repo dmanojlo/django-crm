@@ -5,15 +5,16 @@ from django.views.generic import TemplateView, ListView, DetailView, CreateView,
 from django.contrib.auth.mixins import LoginRequiredMixin
 from leads.models import Agent
 from .forms import AgentModelForm
+from .mixins import OrganiserAndLoginRequiredMixin
 
-
-class AgentListView(LoginRequiredMixin, ListView):
+class AgentListView(OrganiserAndLoginRequiredMixin, ListView):
     template_name = "agents/agent_list.html"
     
     def get_queryset(self):
-        return Agent.objects.all()
+        organisation = self.request.user.userprofile
+        return Agent.objects.filter(organisation=organisation)
     
-class AgentCreateView(LoginRequiredMixin, CreateView):
+class AgentCreateView(OrganiserAndLoginRequiredMixin, CreateView):
     template_name = "agents/agent_create.html"
     form_class = AgentModelForm
 
@@ -28,15 +29,16 @@ class AgentCreateView(LoginRequiredMixin, CreateView):
     
 
 
-class AgentDetailView(LoginRequiredMixin, DetailView):
+class AgentDetailView(OrganiserAndLoginRequiredMixin, DetailView):
     template_name = "agents/agent_detail.html"
     context_object_name = "agent"
 
     def get_queryset(self):
-        return Agent.objects.all()
+        organisation = self.request.user.userprofile
+        return Agent.objects.filter(organisation=organisation)
     
 
-class AgentUpdateView(LoginRequiredMixin, UpdateView):
+class AgentUpdateView(OrganiserAndLoginRequiredMixin, UpdateView):
     template_name = "agents/agent_update.html"
     form_class = AgentModelForm
 
@@ -47,7 +49,7 @@ class AgentUpdateView(LoginRequiredMixin, UpdateView):
         return Agent.objects.all()
     
 
-class AgentDeleteView(LoginRequiredMixin, DeleteView):
+class AgentDeleteView(OrganiserAndLoginRequiredMixin, DeleteView):
     template_name = "agents/agent_delete.html"
     context_object_name = "agent"
 
@@ -55,4 +57,5 @@ class AgentDeleteView(LoginRequiredMixin, DeleteView):
         return reverse("agents:agent-list")
 
     def get_queryset(self):
-        return Agent.objects.all()
+        organisation = self.request.user.userprofile
+        return Agent.objects.filter(organisation=organisation)
