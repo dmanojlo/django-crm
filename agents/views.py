@@ -6,6 +6,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from leads.models import Agent
 from .forms import AgentModelForm
 from .mixins import OrganiserAndLoginRequiredMixin
+from django.core.mail import send_mail
+import random
 
 class AgentListView(OrganiserAndLoginRequiredMixin, ListView):
     template_name = "agents/agent_list.html"
@@ -22,9 +24,21 @@ class AgentCreateView(OrganiserAndLoginRequiredMixin, CreateView):
         return reverse("agents:agent-list")
     
     def form_valid(self, form):
-        agent = form.save(commit=False)
-        agent.organisation = self.request.user.userprofile
-        agent.save()
+        user = form.save(commit=False)
+        user.is_agent = True
+        user.is_organiser = False
+        user.set_password(f"{random.randint(0, 1000000)}")
+        user.save()
+        Agent.objects.create(user=user,
+                             organisation=self.request.user.userprofile,
+                             )
+        # agent.organisation = self.request.user.userprofile
+        # agent.save()
+        send_mail(subject="You are invited to be an agent",
+                  message="You were addded as an agent on DJCRM. Plesase login",
+                  from_email='admin@test.com',
+                  recipient_list=[user.email]
+                  )
         return super(AgentCreateView, self).form_valid(form)
     
 
